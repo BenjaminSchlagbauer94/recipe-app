@@ -4,47 +4,72 @@ import styles from './RecipeForm.module.css'
 
 // For each ingredient that has an amount, inject that amount into steps where
 // the ingredient name appears but is not yet preceded by its amount.
-// This repairs steps that had their amounts stripped by a previous bug.
+// Tries the full ingredient name first, then just the first word as fallback
+// (e.g. "Frischkäse" from "Frischkäse natur"). Only injects into the first
+// matching step to avoid repetition. Repairs steps corrupted by a previous bug.
 function restoreAmountsInSteps(ingredients, steps) {
   let result = steps.slice()
+
   for (const ing of ingredients) {
     const { amount, rest } = parseIngredient(ing)
     if (!amount || !rest) continue
     const ingName = rest.replace(/^(?:of|von|aus|mit)\s+/i, '').trim()
     if (ingName.length < 2) continue
-    // Skip if the amount already appears right before the ingredient name
-    const alreadyPresent = result.some(s => {
+    const ingNameFirst = ingName.split(/\s+/)[0]
+
+    const alreadyPresent = (name) => result.some(s => {
       const lower = s.toLowerCase()
-      return lower.includes((amount + ' ' + ingName).toLowerCase()) ||
-             lower.includes((amount + ingName).toLowerCase())
+      return lower.includes((amount + ' ' + name).toLowerCase()) ||
+             lower.includes((amount + name).toLowerCase())
     })
-    if (alreadyPresent) continue
-    result = result.map(step => {
-      const lowerStep = step.toLowerCase()
-      const lowerName = ingName.toLowerCase()
-      const idx = lowerStep.indexOf(lowerName)
-      if (idx === -1) return step
-      // Only inject at a word boundary (not inside another word)
-      const charBefore = idx > 0 ? step[idx - 1] : ' '
-      if (/[a-zA-ZäöüÄÖÜß]/.test(charBefore)) return step
-      // Don't inject if already preceded by a digit
-      if (/\d/.test(charBefore)) return step
-      return step.substring(0, idx) + amount + ' ' + step.substring(idx)
-    })
+    if (alreadyPresent(ingName) || (ingNameFirst !== ingName && alreadyPresent(ingNameFirst))) continue
+
+    // Attempt to inject amount before `name` in the first step where it appears
+    const tryInject = (name) => {
+      const lowerName = name.toLowerCase()
+      let injected = false
+      const updated = result.map(step => {
+        if (injected) return step
+        const lowerStep = step.toLowerCase()
+        const idx = lowerStep.indexOf(lowerName)
+        if (idx === -1) return step
+        const charBefore = idx > 0 ? step[idx - 1] : ' '
+        const charAfter = step[idx + name.length] || ' '
+        // Must be at a word boundary on both sides
+        if (/[a-zA-ZäöüÄÖÜß]/.test(charBefore)) return step
+        if (/[a-zA-ZäöüÄÖÜß]/.test(charAfter)) return step
+        if (/\d/.test(charBefore)) return step  // already has a number before it
+        injected = true
+        return step.substring(0, idx) + amount + ' ' + step.substring(idx)
+      })
+      return injected ? updated : null
+    }
+
+    const withFull = tryInject(ingName)
+    if (withFull) { result = withFull; continue }
+    if (ingNameFirst !== ingName) {
+      const withFirst = tryInject(ingNameFirst)
+      if (withFirst) result = withFirst
+    }
   }
   return result
 }
 
 function parseIngredient(str) {
-  // Number + attached unit: "150g Sugar", "1.5kg flour", "2tbsp oil"
-  const attached = str.match(/^(\d[\d.,/]*\s*(?:g|kg|ml|l|cl|dl|tbsp?|tsp?|cups?|oz|lbs?|pieces?|pcs?|slices?|bunch(?:es)?|pinch(?:es)?|handful|packs?|cans?|jars?|bottles?|bags?|cm|mm)\.?)\s*(.*)/i)
-  if (attached) return { amount: attached[1].trim(), rest: attached[2] }
+  const UNITS =
+    // German
+    'EL|TL|MSP|Bund(?:e|es)?|Prise(?:n)?|Stück(?:e|es)?|Scheibe(?:n)?' +
+    '|Zehe(?:n)?|Dose(?:n)?|Glas|Gläser|Flasche(?:n)?|Packung(?:en)?' +
+    '|Becher|Zweig(?:e)?|Blatt|Blätter|Paar|Pkt' +
+    // Metric / English
+    '|g|kg|ml|l|cl|dl|tbsp?|tsp?|cups?|oz|lbs?|pieces?|pcs?|slices?' +
+    '|bunch(?:es)?|pinch(?:es)?|handful|packs?|cans?|jars?|bottles?|bags?|cm|mm'
 
-  // Number + space + unit: "150 g Sugar", "1 tbsp oil"
-  const spaced = str.match(/^(\d[\d.,/]*\s+(?:g|kg|ml|l|cl|dl|tbsp?|tsp?|cups?|oz|lbs?|pieces?|pcs?|slices?|bunch(?:es)?|pinch(?:es)?|handful|packs?|cans?|jars?|bottles?|bags?|cm|mm)\.?)\s+(.*)/i)
-  if (spaced) return { amount: spaced[1].trim(), rest: spaced[2] }
+  // Number (e.g. 150, 0,5, 1/2) + optional space + known unit + space + rest
+  const withUnit = str.match(new RegExp(`^(\\d[\\d.,/]*\\s*(?:${UNITS})\\.?)\\s+(.+)`, 'i'))
+  if (withUnit) return { amount: withUnit[1].trim(), rest: withUnit[2] }
 
-  // Plain number: "2 eggs", "3 cloves garlic"
+  // Plain number only: "2 eggs", "3 cloves garlic"
   const plain = str.match(/^(\d[\d.,/]*)\s+(.+)/)
   if (plain) return { amount: plain[1], rest: plain[2] }
 
