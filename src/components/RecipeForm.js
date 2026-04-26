@@ -2,6 +2,22 @@ import { useState, useEffect } from 'react'
 import { getCategories } from '../lib/api'
 import styles from './RecipeForm.module.css'
 
+function parseIngredient(str) {
+  // Number + attached unit: "150g Sugar", "1.5kg flour", "2tbsp oil"
+  const attached = str.match(/^(\d[\d.,/]*\s*(?:g|kg|ml|l|cl|dl|tbsp?|tsp?|cups?|oz|lbs?|pieces?|pcs?|slices?|bunch(?:es)?|pinch(?:es)?|handful|packs?|cans?|jars?|bottles?|bags?|cm|mm)\.?)\s*(.*)/i)
+  if (attached) return { amount: attached[1].trim(), rest: attached[2] }
+
+  // Number + space + unit: "150 g Sugar", "1 tbsp oil"
+  const spaced = str.match(/^(\d[\d.,/]*\s+(?:g|kg|ml|l|cl|dl|tbsp?|tsp?|cups?|oz|lbs?|pieces?|pcs?|slices?|bunch(?:es)?|pinch(?:es)?|handful|packs?|cans?|jars?|bottles?|bags?|cm|mm)\.?)\s+(.*)/i)
+  if (spaced) return { amount: spaced[1].trim(), rest: spaced[2] }
+
+  // Plain number: "2 eggs", "3 cloves garlic"
+  const plain = str.match(/^(\d[\d.,/]*)\s+(.+)/)
+  if (plain) return { amount: plain[1], rest: plain[2] }
+
+  return { amount: '', rest: str }
+}
+
 export default function RecipeForm({ initial = {}, onSave, onCancel, mode = 'edit' }) {
   const [categories, setCategories] = useState([])
   const [form, setForm] = useState({
@@ -32,6 +48,16 @@ export default function RecipeForm({ initial = {}, onSave, onCancel, mode = 'edi
 
   const removeIngredient = (i) =>
     set('ingredients', form.ingredients.filter((_, idx) => idx !== i))
+
+  const updateIngredientAmount = (i, newAmount) => {
+    const { amount: oldAmount, rest } = parseIngredient(form.ingredients[i])
+    const newIngredientStr = newAmount + (rest ? ' ' + rest : '')
+    const newIngredients = form.ingredients.map((ing, idx) => idx === i ? newIngredientStr : ing)
+    const newSteps = (oldAmount && oldAmount !== newAmount)
+      ? form.steps.map(step => step.split(oldAmount).join(newAmount))
+      : form.steps
+    setForm(f => ({ ...f, ingredients: newIngredients, steps: newSteps }))
+  }
 
   const updateStep = (i, val) =>
     set('steps', form.steps.map((s, idx) => idx === i ? val : s))
@@ -129,12 +155,22 @@ export default function RecipeForm({ initial = {}, onSave, onCancel, mode = 'edi
       <div className={styles.field}>
         <label className={styles.label}>Ingredients</label>
         <div className={styles.ingredientList}>
-          {form.ingredients.map((ing, i) => (
-            <div key={i} className={styles.ingredientItem}>
-              <span>{ing}</span>
-              <button onClick={() => removeIngredient(i)} className={styles.removeBtn}>✕</button>
-            </div>
-          ))}
+          {form.ingredients.map((ing, i) => {
+            const { amount, rest } = parseIngredient(ing)
+            return (
+              <div key={i} className={styles.ingredientItem}>
+                {amount ? (
+                  <input
+                    className={styles.amountInput}
+                    value={amount}
+                    onChange={e => updateIngredientAmount(i, e.target.value)}
+                  />
+                ) : null}
+                <span className={styles.ingredientRest}>{rest}</span>
+                <button onClick={() => removeIngredient(i)} className={styles.removeBtn}>✕</button>
+              </div>
+            )
+          })}
         </div>
         <div className={styles.addRow}>
           <input

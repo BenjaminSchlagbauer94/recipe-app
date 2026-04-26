@@ -112,13 +112,27 @@
 .ingredientItem {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 8px;
   padding: 10px 14px;
   background: var(--off-white);
   border: 1px solid var(--warm-gray-100);
   border-radius: var(--radius-sm);
   font-size: 14px;
 }
+.amountInput {
+  width: 72px;
+  flex-shrink: 0;
+  padding: 3px 7px;
+  border: 1px solid var(--warm-gray-200);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-family: var(--font-body);
+  background: var(--white);
+  color: var(--black);
+  text-align: center;
+}
+.amountInput:focus { border-color: var(--black); outline: none; background: var(--white); }
+.ingredientRest { flex: 1; font-size: 14px; }
 .addRow { display: flex; gap: 8px; }
 .addBtn {
   padding: 12px 20px;
