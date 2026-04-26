@@ -2,6 +2,39 @@ import { useState, useEffect } from 'react'
 import { getCategories } from '../lib/api'
 import styles from './RecipeForm.module.css'
 
+// For each ingredient that has an amount, inject that amount into steps where
+// the ingredient name appears but is not yet preceded by its amount.
+// This repairs steps that had their amounts stripped by a previous bug.
+function restoreAmountsInSteps(ingredients, steps) {
+  let result = steps.slice()
+  for (const ing of ingredients) {
+    const { amount, rest } = parseIngredient(ing)
+    if (!amount || !rest) continue
+    const ingName = rest.replace(/^(?:of|von|aus|mit)\s+/i, '').trim()
+    if (ingName.length < 2) continue
+    // Skip if the amount already appears right before the ingredient name
+    const alreadyPresent = result.some(s => {
+      const lower = s.toLowerCase()
+      return lower.includes((amount + ' ' + ingName).toLowerCase()) ||
+             lower.includes((amount + ingName).toLowerCase())
+    })
+    if (alreadyPresent) continue
+    result = result.map(step => {
+      const lowerStep = step.toLowerCase()
+      const lowerName = ingName.toLowerCase()
+      const idx = lowerStep.indexOf(lowerName)
+      if (idx === -1) return step
+      // Only inject at a word boundary (not inside another word)
+      const charBefore = idx > 0 ? step[idx - 1] : ' '
+      if (/[a-zA-ZäöüÄÖÜß]/.test(charBefore)) return step
+      // Don't inject if already preceded by a digit
+      if (/\d/.test(charBefore)) return step
+      return step.substring(0, idx) + amount + ' ' + step.substring(idx)
+    })
+  }
+  return result
+}
+
 function parseIngredient(str) {
   // Number + attached unit: "150g Sugar", "1.5kg flour", "2tbsp oil"
   const attached = str.match(/^(\d[\d.,/]*\s*(?:g|kg|ml|l|cl|dl|tbsp?|tsp?|cups?|oz|lbs?|pieces?|pcs?|slices?|bunch(?:es)?|pinch(?:es)?|handful|packs?|cans?|jars?|bottles?|bags?|cm|mm)\.?)\s*(.*)/i)
@@ -26,7 +59,7 @@ export default function RecipeForm({ initial = {}, onSave, onCancel, mode = 'edi
     servings: initial.servings || 2,
     image_url: initial.image_url || '',
     ingredients: initial.ingredients || [],
-    steps: initial.steps || [],
+    steps: restoreAmountsInSteps(initial.ingredients || [], initial.steps || []),
     score_vitamins: initial.score_vitamins || 5,
     score_proteins: initial.score_proteins || 5,
     score_carbs: initial.score_carbs || 5,
@@ -73,7 +106,12 @@ export default function RecipeForm({ initial = {}, onSave, onCancel, mode = 'edi
     if (newAmount === oldAmount) return
     const newIngredientStr = newAmount + (rest ? ' ' + rest : '')
     const newIngredients = form.ingredients.map((ing, idx) => idx === i ? newIngredientStr : ing)
-    const newSteps = form.steps.map(step => step.split(oldAmount).join(newAmount))
+    let newSteps = form.steps.map(step => step.split(oldAmount).join(newAmount))
+    // Fallback: if the new amount still doesn't appear in any step (old amount was
+    // already stripped), inject it before the ingredient name
+    if (rest && !newSteps.some(s => s.includes(newAmount))) {
+      newSteps = restoreAmountsInSteps([newIngredientStr], newSteps)
+    }
     setForm(f => ({ ...f, ingredients: newIngredients, steps: newSteps }))
   }
 
