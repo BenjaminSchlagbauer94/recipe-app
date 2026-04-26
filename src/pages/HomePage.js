@@ -10,6 +10,8 @@ const CATEGORY_ICONS = {
   'Desserts': '🍮',
   'Drinks': '🍹',
   'Prep Meals': '📦',
+  'Soups & Stews': '🍲',
+  "Soup's & Stew's": '🍲',
 }
 
 export default function HomePage() {

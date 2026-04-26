@@ -20,6 +20,7 @@ export default function CookModePage() {
   const [timerRunning, setTimerRunning] = useState(false)
   const [timerSeconds, setTimerSeconds] = useState(0)
   const intervalRef = useRef(null)
+  const wakeLockRef = useRef(null)
 
   useEffect(() => {
     getRecipe(id)
@@ -27,6 +28,21 @@ export default function CookModePage() {
       .catch(() => navigate('/'))
       .finally(() => setLoading(false))
   }, [id])
+
+  // Keep screen awake during cooking
+  useEffect(() => {
+    if (phase !== 'cooking') return
+    if (!('wakeLock' in navigator)) return
+    navigator.wakeLock.request('screen')
+      .then(lock => { wakeLockRef.current = lock })
+      .catch(() => {})
+    return () => {
+      if (wakeLockRef.current) {
+        wakeLockRef.current.release()
+        wakeLockRef.current = null
+      }
+    }
+  }, [phase])
 
   // Timer logic
   useEffect(() => {
