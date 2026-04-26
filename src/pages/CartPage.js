@@ -82,20 +82,18 @@ export default function CartPage() {
           <div className={styles.otherList}>
             {otherGroceries.map(item => (
               <div key={item.name} className={styles.otherItem}>
-                <div className={styles.otherItemInfo}>
-                  <span className={styles.otherItemName}>{item.name}</span>
-                  <div className={styles.servingsRow}>
-                    <button
-                      className={styles.stepBtn}
-                      onClick={() => updateOtherGroceryQuantity(item.name, item.quantity - 1)}
-                    >−</button>
-                    <span className={styles.servingsNum}>{item.quantity}</span>
-                    <span className={styles.servingsUnit}>piece{item.quantity !== 1 ? 's' : ''}</span>
-                    <button
-                      className={styles.stepBtn}
-                      onClick={() => updateOtherGroceryQuantity(item.name, item.quantity + 1)}
-                    >+</button>
-                  </div>
+                <span className={styles.otherItemName}>{item.name}</span>
+                <div className={styles.servingsRow}>
+                  <button
+                    className={styles.stepBtn}
+                    onClick={() => updateOtherGroceryQuantity(item.name, item.quantity - 1)}
+                  >−</button>
+                  <span className={styles.servingsNum}>{item.quantity}</span>
+                  <span className={styles.servingsUnit}>piece{item.quantity !== 1 ? 's' : ''}</span>
+                  <button
+                    className={styles.stepBtn}
+                    onClick={() => updateOtherGroceryQuantity(item.name, item.quantity + 1)}
+                  >+</button>
                 </div>
                 <button
                   className={styles.removeBtn}
