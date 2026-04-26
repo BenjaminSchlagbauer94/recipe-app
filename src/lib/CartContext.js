@@ -56,7 +56,7 @@ export function CartProvider({ children }) {
       .from('shared_cart')
       .upsert({ id: CART_ID, cart_items: cartItems, other_groceries: otherGroceries })
       .then()
-  }, [cartItems, otherGroceries]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [cartItems, otherGroceries]) // eslint-disable-line
 
   function addToCart(recipe, servings) {
     setCartItems(prev => {
