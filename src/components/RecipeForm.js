@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { getCategories } from '../lib/api'
+import { getCategories, enhanceSteps } from '../lib/api'
 import { parseIngredient, restoreAmountsInSteps } from '../lib/recipeUtils'
 import styles from './RecipeForm.module.css'
 
@@ -17,6 +17,7 @@ export default function RecipeForm({ initial = {}, onSave, onCancel, mode = 'edi
     score_carbs: initial.score_carbs || 5,
   })
   const [saving, setSaving] = useState(false)
+  const [enhancing, setEnhancing] = useState(false)
   const [newIngredient, setNewIngredient] = useState('')
   // Separate draft state so the amount input can be cleared mid-edit without
   // immediately mangling the ingredient string or the steps.
@@ -47,7 +48,8 @@ export default function RecipeForm({ initial = {}, onSave, onCancel, mode = 'edi
   const handleAmountChange = (i, val) =>
     setDraftAmounts(da => da.map((a, idx) => idx === i ? val : a))
 
-  // On blur: commit if non-empty (and sync steps), otherwise revert to stored value.
+  // On blur: commit the new amount to the ingredient string, otherwise revert.
+  // Steps are left untouched — the AI will fix them on save.
   const handleAmountBlur = (i) => {
     const newAmount = draftAmounts[i].trim()
     const { amount: oldAmount, rest } = parseIngredient(form.ingredients[i])
@@ -57,14 +59,7 @@ export default function RecipeForm({ initial = {}, onSave, onCancel, mode = 'edi
     }
     if (newAmount === oldAmount) return
     const newIngredientStr = newAmount + (rest ? ' ' + rest : '')
-    const newIngredients = form.ingredients.map((ing, idx) => idx === i ? newIngredientStr : ing)
-    let newSteps = form.steps.map(step => step.split(oldAmount).join(newAmount))
-    // Fallback: if the new amount still doesn't appear in any step (old amount was
-    // already stripped), inject it before the ingredient name
-    if (rest && !newSteps.some(s => s.includes(newAmount))) {
-      newSteps = restoreAmountsInSteps([newIngredientStr], newSteps)
-    }
-    setForm(f => ({ ...f, ingredients: newIngredients, steps: newSteps }))
+    set('ingredients', form.ingredients.map((ing, idx) => idx === i ? newIngredientStr : ing))
   }
 
   const updateStep = (i, val) =>
@@ -76,8 +71,17 @@ export default function RecipeForm({ initial = {}, onSave, onCancel, mode = 'edi
   const handleSubmit = async () => {
     if (!form.name.trim()) return alert('Please enter a recipe name')
     setSaving(true)
+    setEnhancing(true)
+    let finalSteps = form.steps
     try {
-      await onSave(form)
+      const { steps: enhanced } = await enhanceSteps(form.ingredients, form.steps)
+      finalSteps = enhanced
+    } catch {
+      // AI unavailable — save with current steps unchanged
+    }
+    setEnhancing(false)
+    try {
+      await onSave({ ...form, steps: finalSteps })
     } finally {
       setSaving(false)
     }
@@ -216,7 +220,7 @@ export default function RecipeForm({ initial = {}, onSave, onCancel, mode = 'edi
       <div className={styles.actions}>
         <button className={styles.cancelBtn} onClick={onCancel}>Cancel</button>
         <button className={styles.saveBtn} onClick={handleSubmit} disabled={saving}>
-          {saving ? 'Saving…' : mode === 'create' ? 'Save Recipe' : 'Save Changes'}
+          {enhancing ? 'Updating steps…' : saving ? 'Saving…' : mode === 'create' ? 'Save Recipe' : 'Save Changes'}
         </button>
       </div>
     </div>

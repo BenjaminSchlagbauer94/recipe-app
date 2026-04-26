@@ -89,3 +89,13 @@ export async function getGrocerySuggestions() {
   if (!res.ok) throw new Error('Failed to fetch grocery suggestions')
   return res.json()
 }
+
+export async function enhanceSteps(ingredients, steps) {
+  const res = await fetch(`${API_URL}/enhance-steps`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ingredients, steps }),
+  })
+  if (!res.ok) throw new Error('Failed to enhance steps')
+  return res.json()
+}
