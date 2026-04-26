@@ -160,6 +160,41 @@
   color: var(--danger);
 }
 
+/* ── Inline empty-recipes state ──────────────────────────── */
+.emptyRecipes {
+  text-align: center;
+  padding: 40px 24px;
+  margin-bottom: 32px;
+  background: var(--off-white);
+  border: 1px dashed var(--warm-gray-200);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.emptyRecipes .emptyIcon { font-size: 32px; opacity: 0.35; }
+.emptyRecipes .emptyTitle {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 400;
+  color: var(--black);
+}
+.emptyRecipes .emptyText { font-size: 14px; color: var(--warm-gray-400); }
+.emptyRecipes .browseBtn {
+  margin-top: 4px;
+  background: var(--black);
+  color: var(--white);
+  border: none;
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.emptyRecipes .browseBtn:hover { background: var(--warm-gray-800); }
+
 /* ── Other Groceries section ──────────────────────────────── */
 .otherSection {
   margin-bottom: 32px;

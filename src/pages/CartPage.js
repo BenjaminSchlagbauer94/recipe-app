@@ -4,27 +4,18 @@ import styles from './CartPage.module.css'
 
 export default function CartPage() {
   const navigate = useNavigate()
-  const { cartItems, removeFromCart, updateServings, clearCart, otherGroceries, removeOtherGrocery, updateOtherGroceryQuantity } = useCart()
-
-  if (cartItems.length === 0 && otherGroceries.length === 0) {
-    return (
-      <div className={styles.empty}>
-        <div className={styles.emptyIcon}>🛒</div>
-        <h2 className={styles.emptyTitle}>Your cart is empty</h2>
-        <p className={styles.emptyText}>Add recipes from the collection to plan your shopping.</p>
-        <button className={styles.browseBtn} onClick={() => navigate('/')}>Browse Recipes</button>
-      </div>
-    )
-  }
+  const { cartItems, removeFromCart, updateServings, clearCart, clearOtherGroceries, otherGroceries, removeOtherGrocery, updateOtherGroceryQuantity } = useCart()
 
   return (
     <div className={styles.page}>
       <div className={styles.header}>
         <h1 className={styles.title}>Shopping Cart</h1>
-        <button className={styles.clearBtn} onClick={clearCart}>Clear all</button>
+        {(cartItems.length > 0 || otherGroceries.length > 0) && (
+          <button className={styles.clearBtn} onClick={() => { clearCart(); clearOtherGroceries() }}>Clear all</button>
+        )}
       </div>
 
-      {cartItems.length > 0 && (
+      {cartItems.length > 0 ? (
         <div className={styles.list}>
           {cartItems.map(item => (
             <div key={item.id} className={styles.item}>
@@ -66,6 +57,13 @@ export default function CartPage() {
               </button>
             </div>
           ))}
+        </div>
+      ) : (
+        <div className={styles.emptyRecipes}>
+          <div className={styles.emptyIcon}>🛒</div>
+          <p className={styles.emptyTitle}>No recipes added yet</p>
+          <p className={styles.emptyText}>Browse recipes and add them to plan your shopping.</p>
+          <button className={styles.browseBtn} onClick={() => navigate('/')}>Browse Recipes</button>
         </div>
       )}
 

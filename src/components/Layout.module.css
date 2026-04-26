@@ -113,8 +113,28 @@
   line-height: 1;
 }
 
-.menuBtn {
+.mobileRight {
   display: none;
+  align-items: center;
+  gap: 4px;
+}
+
+.mobileCartBtn {
+  position: relative;
+  background: none;
+  border: none;
+  color: var(--warm-gray-600);
+  cursor: pointer;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  border-radius: var(--radius-md);
+  transition: color 0.2s;
+}
+.mobileCartBtn:hover { color: var(--black); }
+
+.menuBtn {
+  display: flex;
   flex-direction: column;
   gap: 5px;
   background: none;
@@ -154,5 +174,6 @@
 @media (max-width: 640px) {
   .nav { display: none; }
   .menuBtn { display: flex; }
+  .mobileRight { display: flex; }
   .main { padding: 24px 16px; }
 }

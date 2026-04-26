@@ -215,6 +215,28 @@
   max-width: 680px;
 }
 
+/* Next step preview */
+.nextStepPreview {
+  border-top: 1px solid var(--warm-gray-100);
+  padding-top: 20px;
+}
+.nextStepLabel {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--warm-gray-300);
+  margin-bottom: 10px;
+}
+.nextStepText {
+  font-family: var(--font-display);
+  font-size: clamp(16px, 2vw, 24px);
+  font-weight: 300;
+  line-height: 1.5;
+  color: var(--warm-gray-300);
+  max-width: 680px;
+}
+
 /* Timer */
 .timerSection {
   background: var(--white);

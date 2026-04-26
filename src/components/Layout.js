@@ -44,13 +44,23 @@ export default function Layout() {
             <Link to="/inspirations" className={styles.navLink}>Inspirations</Link>
           </nav>
 
-          <button
-            className={styles.menuBtn}
-            onClick={() => setMenuOpen(!menuOpen)}
-            aria-label="Menu"
-          >
-            <span /><span /><span />
-          </button>
+          <div className={styles.mobileRight}>
+            <button
+              className={styles.mobileCartBtn}
+              onClick={() => navigate('/cart')}
+              aria-label={`Shopping cart${cartCount > 0 ? `, ${cartCount} items` : ''}`}
+            >
+              <CartIcon />
+              {cartCount > 0 && <span className={styles.cartBadge}>{cartCount}</span>}
+            </button>
+            <button
+              className={styles.menuBtn}
+              onClick={() => setMenuOpen(!menuOpen)}
+              aria-label="Menu"
+            >
+              <span /><span /><span />
+            </button>
+          </div>
         </div>
 
         {menuOpen && (

@@ -19,6 +19,7 @@ export default function HomePage() {
   const [categories, setCategories] = useState([])
   const [recipes, setRecipes] = useState([])
   const [activeCategory, setActiveCategory] = useState('all')
+  const [searchQuery, setSearchQuery] = useState('')
   const [loading, setLoading] = useState(true)
   const [addingCategory, setAddingCategory] = useState(false)
   const [newCategoryName, setNewCategoryName] = useState('')
@@ -45,9 +46,11 @@ export default function HomePage() {
     }
   }
 
-  const filtered = activeCategory === 'all'
-    ? recipes
-    : recipes.filter(r => r.category_id === activeCategory)
+  const filtered = searchQuery.trim()
+    ? recipes.filter(r => r.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    : activeCategory === 'all'
+      ? recipes
+      : recipes.filter(r => r.category_id === activeCategory)
 
   if (loading) return <div className={styles.loading}><span className={styles.spinner} /></div>
 
@@ -57,6 +60,19 @@ export default function HomePage() {
         <p className={styles.heroSub}>Your personal collection</p>
         <h1 className={styles.heroTitle}>Recipe Book</h1>
         <p className={styles.heroDesc}>{recipes.length} recipes across {categories.length} categories</p>
+      </div>
+
+      {/* Search */}
+      <div className={styles.searchBar}>
+        <svg className={styles.searchIcon} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+          <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
+        <input
+          className={styles.searchInput}
+          value={searchQuery}
+          onChange={e => setSearchQuery(e.target.value)}
+          placeholder="Search recipes…"
+        />
       </div>
 
       {/* Category tabs */}

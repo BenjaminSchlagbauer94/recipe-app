@@ -231,6 +231,13 @@ export default function CookModePage() {
         <div className={styles.stepNumber}>Step {currentStep + 1}</div>
         <p className={styles.stepText}>{steps[currentStep]}</p>
 
+        {currentStep < steps.length - 1 && (
+          <div className={styles.nextStepPreview}>
+            <p className={styles.nextStepLabel}>Next</p>
+            <p className={styles.nextStepText}>{steps[currentStep + 1]}</p>
+          </div>
+        )}
+
         {/* Timer section */}
         <div className={styles.timerSection}>
           {timerSeconds > 0 || timerRunning ? (
