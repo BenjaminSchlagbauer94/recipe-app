@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { getRecipe } from '../lib/api'
+import { restoreAmountsInSteps } from '../lib/recipeUtils'
 import styles from './CookModePage.module.css'
 
 export default function CookModePage() {
@@ -24,7 +25,10 @@ export default function CookModePage() {
 
   useEffect(() => {
     getRecipe(id)
-      .then(r => { setRecipe(r); setServings(r.servings || 2) })
+      .then(r => {
+        setRecipe({ ...r, steps: restoreAmountsInSteps(r.ingredients || [], r.steps || []) })
+        setServings(r.servings || 2)
+      })
       .catch(() => navigate('/'))
       .finally(() => setLoading(false))
   }, [id])

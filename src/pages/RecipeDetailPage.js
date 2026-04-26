@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { getRecipe, deleteRecipe } from '../lib/api'
+import { restoreAmountsInSteps } from '../lib/recipeUtils'
 import styles from './RecipeDetailPage.module.css'
 
 function ScoreBar({ value, label }) {
@@ -25,7 +26,7 @@ export default function RecipeDetailPage() {
 
   useEffect(() => {
     getRecipe(id)
-      .then(setRecipe)
+      .then(r => setRecipe({ ...r, steps: restoreAmountsInSteps(r.ingredients || [], r.steps || []) }))
       .catch(() => navigate('/'))
       .finally(() => setLoading(false))
   }, [id])
