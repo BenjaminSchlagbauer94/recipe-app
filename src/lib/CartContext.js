@@ -1,32 +1,67 @@
-import { createContext, useContext, useState, useEffect } from 'react'
+import { createContext, useContext, useState, useEffect, useRef } from 'react'
+import { supabase } from './supabase'
 
 const CartContext = createContext()
+const CART_ID = 'main'
 
 export function CartProvider({ children }) {
-  const [cartItems, setCartItems] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('recipe-cart')) || [] } catch { return [] }
-  })
-
-  const [otherGroceries, setOtherGroceries] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('other-groceries')) || [] } catch { return [] }
-  })
-
-  useEffect(() => {
-    localStorage.setItem('recipe-cart', JSON.stringify(cartItems))
-  }, [cartItems])
+  const [cartItems, setCartItems] = useState([])
+  const [otherGroceries, setOtherGroceries] = useState([])
+  const [cartLoaded, setCartLoaded] = useState(false)
+  // Prevents the save effect from echoing back data we just received
+  // (from initial load or from a Realtime update sent by another device)
+  const skipSaveRef = useRef(false)
 
   useEffect(() => {
-    localStorage.setItem('other-groceries', JSON.stringify(otherGroceries))
-  }, [otherGroceries])
+    // Initial load from Supabase
+    supabase
+      .from('shared_cart')
+      .select('cart_items, other_groceries')
+      .eq('id', CART_ID)
+      .maybeSingle()
+      .then(({ data }) => {
+        skipSaveRef.current = true
+        setCartItems(data?.cart_items || [])
+        setOtherGroceries(data?.other_groceries || [])
+        setCartLoaded(true)
+      })
+
+    // Realtime: receive changes made on another device
+    const channel = supabase
+      .channel('cart-sync')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'shared_cart',
+        filter: `id=eq.${CART_ID}`,
+      }, ({ new: row }) => {
+        if (!row?.cart_items) return
+        skipSaveRef.current = true
+        setCartItems(row.cart_items)
+        setOtherGroceries(row.other_groceries || [])
+      })
+      .subscribe()
+
+    return () => supabase.removeChannel(channel)
+  }, [])
+
+  // Persist to Supabase whenever cart changes — skipped for incoming syncs
+  useEffect(() => {
+    if (skipSaveRef.current) {
+      skipSaveRef.current = false
+      return
+    }
+    if (!cartLoaded) return
+    supabase
+      .from('shared_cart')
+      .upsert({ id: CART_ID, cart_items: cartItems, other_groceries: otherGroceries })
+      .then()
+  }, [cartItems, otherGroceries]) // eslint-disable-line react-hooks/exhaustive-deps
 
   function addToCart(recipe, servings) {
     setCartItems(prev => {
       const existing = prev.find(item => item.id === recipe.id)
-      if (existing) {
-        return prev.map(item =>
-          item.id === recipe.id ? { ...item, servings } : item
-        )
-      }
+      if (existing) return prev.map(item => item.id === recipe.id ? { ...item, servings } : item)
       return [...prev, {
         id: recipe.id,
         name: recipe.name,
@@ -43,9 +78,7 @@ export function CartProvider({ children }) {
   }
 
   function updateServings(id, servings) {
-    setCartItems(prev =>
-      prev.map(item => item.id === id ? { ...item, servings } : item)
-    )
+    setCartItems(prev => prev.map(item => item.id === id ? { ...item, servings } : item))
   }
 
   function clearCart() {
@@ -83,7 +116,7 @@ export function CartProvider({ children }) {
 
   return (
     <CartContext.Provider value={{
-      cartItems, addToCart, removeFromCart, updateServings, clearCart, isInCart,
+      cartItems, addToCart, removeFromCart, updateServings, clearCart, isInCart, cartLoaded,
       otherGroceries, addOtherGrocery, removeOtherGrocery, updateOtherGroceryQuantity, clearOtherGroceries,
     }}>
       {children}

@@ -34,7 +34,7 @@ function getStep(value) {
 
 export default function ShoppingListPage() {
   const navigate = useNavigate()
-  const { cartItems, otherGroceries } = useCart()
+  const { cartItems, otherGroceries, clearCart, clearOtherGroceries } = useCart()
   const [categories, setCategories] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -120,6 +120,8 @@ export default function ShoppingListPage() {
       link.download = 'shopping-list.jpg'
       link.href = url
       link.click()
+      clearCart()
+      clearOtherGroceries()
     } catch (err) {
       alert('Could not export the image. Please try again.')
     } finally {
@@ -213,7 +215,7 @@ export default function ShoppingListPage() {
           onClick={handleExport}
           disabled={exporting || totalItems === 0}
         >
-          {exporting ? 'Saving…' : '↓ Save as Image'}
+          {exporting ? 'Saving…' : '↓ Save as Image & Empty Cart'}
         </button>
       </div>
     </div>
