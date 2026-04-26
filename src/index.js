@@ -12,6 +12,7 @@ import EditRecipePage from './pages/EditRecipePage'
 import CookModePage from './pages/CookModePage'
 import CartPage from './pages/CartPage'
 import ShoppingListPage from './pages/ShoppingListPage'
+import OtherGroceriesPage from './pages/OtherGroceriesPage'
 import InspirationPage from './pages/InspirationPage'
 
 const root = ReactDOM.createRoot(document.getElementById('root'))
@@ -27,6 +28,7 @@ root.render(
             <Route path="recipe/:id/edit" element={<EditRecipePage />} />
             <Route path="add" element={<AddRecipePage />} />
             <Route path="cart" element={<CartPage />} />
+            <Route path="other-groceries" element={<OtherGroceriesPage />} />
             <Route path="shopping-list" element={<ShoppingListPage />} />
             <Route path="inspirations" element={<InspirationPage />} />
           </Route>

@@ -160,6 +160,76 @@
   color: var(--danger);
 }
 
+/* ── Other Groceries section ──────────────────────────────── */
+.otherSection {
+  margin-bottom: 32px;
+  padding: 20px;
+  background: var(--off-white);
+  border: 1px solid var(--warm-gray-100);
+  border-radius: var(--radius-lg);
+}
+
+.otherHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.otherTitle {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 400;
+  color: var(--black);
+}
+
+.otherEditBtn {
+  background: none;
+  border: none;
+  font-size: 13px;
+  color: var(--warm-gray-500);
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.2s;
+}
+.otherEditBtn:hover { color: var(--black); }
+
+.otherEmpty {
+  font-size: 13px;
+  color: var(--warm-gray-400);
+  line-height: 1.5;
+}
+
+.chipList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px 5px 12px;
+  background: var(--white);
+  border: 1px solid var(--warm-gray-200);
+  border-radius: 999px;
+  font-size: 13px;
+  color: var(--black);
+}
+
+.chipRemove {
+  background: none;
+  border: none;
+  font-size: 16px;
+  line-height: 1;
+  color: var(--warm-gray-300);
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.15s;
+}
+.chipRemove:hover { color: var(--danger); }
+
 /* ── Footer ───────────────────────────────────────────────── */
 .footer {
   display: flex;
@@ -174,6 +244,27 @@
   color: var(--warm-gray-400);
 }
 
+.footerBtns {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.otherBtn {
+  padding: 14px 20px;
+  border: 1px solid var(--warm-gray-200);
+  background: var(--white);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--black);
+  font-family: var(--font-body);
+  transition: background 0.2s, border-color 0.2s;
+  white-space: nowrap;
+}
+.otherBtn:hover { background: var(--warm-gray-50); border-color: var(--warm-gray-300); }
+
 .checkoutBtn {
   background: var(--black);
   color: var(--white);
@@ -183,7 +274,9 @@
   font-size: 15px;
   font-weight: 500;
   cursor: pointer;
+  font-family: var(--font-body);
   transition: background 0.2s, transform 0.15s;
+  white-space: nowrap;
 }
 .checkoutBtn:hover {
   background: var(--warm-gray-800);
@@ -242,5 +335,6 @@
     align-items: stretch;
   }
   .footerNote { text-align: center; }
-  .checkoutBtn { text-align: center; }
+  .footerBtns { flex-direction: column; }
+  .otherBtn, .checkoutBtn { text-align: center; }
 }

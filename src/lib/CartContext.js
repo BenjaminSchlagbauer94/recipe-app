@@ -4,16 +4,20 @@ const CartContext = createContext()
 
 export function CartProvider({ children }) {
   const [cartItems, setCartItems] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem('recipe-cart')) || []
-    } catch {
-      return []
-    }
+    try { return JSON.parse(localStorage.getItem('recipe-cart')) || [] } catch { return [] }
+  })
+
+  const [otherGroceries, setOtherGroceries] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('other-groceries')) || [] } catch { return [] }
   })
 
   useEffect(() => {
     localStorage.setItem('recipe-cart', JSON.stringify(cartItems))
   }, [cartItems])
+
+  useEffect(() => {
+    localStorage.setItem('other-groceries', JSON.stringify(otherGroceries))
+  }, [otherGroceries])
 
   function addToCart(recipe, servings) {
     setCartItems(prev => {
@@ -52,8 +56,25 @@ export function CartProvider({ children }) {
     return cartItems.some(item => item.id === id)
   }
 
+  function addOtherGrocery(item) {
+    const trimmed = item.trim()
+    if (!trimmed) return
+    setOtherGroceries(prev => prev.includes(trimmed) ? prev : [...prev, trimmed])
+  }
+
+  function removeOtherGrocery(item) {
+    setOtherGroceries(prev => prev.filter(i => i !== item))
+  }
+
+  function clearOtherGroceries() {
+    setOtherGroceries([])
+  }
+
   return (
-    <CartContext.Provider value={{ cartItems, addToCart, removeFromCart, updateServings, clearCart, isInCart }}>
+    <CartContext.Provider value={{
+      cartItems, addToCart, removeFromCart, updateServings, clearCart, isInCart,
+      otherGroceries, addOtherGrocery, removeOtherGrocery, clearOtherGroceries,
+    }}>
       {children}
     </CartContext.Provider>
   )

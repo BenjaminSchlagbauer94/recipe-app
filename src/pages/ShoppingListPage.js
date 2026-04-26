@@ -34,7 +34,7 @@ function getStep(value) {
 
 export default function ShoppingListPage() {
   const navigate = useNavigate()
-  const { cartItems } = useCart()
+  const { cartItems, otherGroceries } = useCart()
   const [categories, setCategories] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -42,7 +42,7 @@ export default function ShoppingListPage() {
   const listRef = useRef(null)
 
   useEffect(() => {
-    if (cartItems.length === 0) {
+    if (cartItems.length === 0 && otherGroceries.length === 0) {
       navigate('/cart')
       return
     }
@@ -54,7 +54,7 @@ export default function ShoppingListPage() {
     setError(null)
     try {
       const items = cartItems.map(item => ({ recipeId: item.id, servings: item.servings }))
-      const data = await generateShoppingList(items)
+      const data = await generateShoppingList(items, otherGroceries)
       const withIds = data.categories.map(cat => ({
         ...cat,
         items: cat.items.map((item, i) => ({

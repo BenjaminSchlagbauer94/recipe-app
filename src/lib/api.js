@@ -74,12 +74,18 @@ export async function getInspirations({ excludeUrls = [], count = 5 } = {}) {
   return res.json()
 }
 
-export async function generateShoppingList(items) {
+export async function generateShoppingList(items, otherItems = []) {
   const res = await fetch(`${API_URL}/shopping/list`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ items }),
+    body: JSON.stringify({ items, otherItems }),
   })
   if (!res.ok) throw new Error('Failed to generate shopping list')
+  return res.json()
+}
+
+export async function getGrocerySuggestions() {
+  const res = await fetch(`${API_URL}/grocery-suggestions`)
+  if (!res.ok) throw new Error('Failed to fetch grocery suggestions')
   return res.json()
 }
