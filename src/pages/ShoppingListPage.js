@@ -47,7 +47,7 @@ export default function ShoppingListPage() {
       return
     }
     load()
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, []) // runs once on mount
 
   async function load() {
     setLoading(true)
