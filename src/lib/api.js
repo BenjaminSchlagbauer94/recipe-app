@@ -63,3 +63,13 @@ export async function createCategory(category) {
   if (!res.ok) throw new Error('Failed to create category')
   return res.json()
 }
+
+export async function generateShoppingList(items) {
+  const res = await fetch(`${API_URL}/shopping/list`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ items }),
+  })
+  if (!res.ok) throw new Error('Failed to generate shopping list')
+  return res.json()
+}

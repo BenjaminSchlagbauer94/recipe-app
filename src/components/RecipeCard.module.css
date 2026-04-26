@@ -105,3 +105,120 @@
   min-width: 60px;
   text-align: right;
 }
+
+/* ── Cart button ─────────────────────────────────────────── */
+.cartBtn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(8px);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--warm-gray-600);
+  transition: background 0.2s, color 0.2s, transform 0.15s;
+  z-index: 2;
+}
+.cartBtn:hover {
+  background: var(--white);
+  color: var(--accent);
+  transform: scale(1.08);
+}
+.cartBtnActive {
+  background: var(--accent);
+  color: var(--white);
+}
+.cartBtnActive:hover {
+  background: var(--accent);
+  color: var(--white);
+}
+
+/* ── Servings picker popover ─────────────────────────────── */
+.pickerOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(26,25,23,0.55);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  border-radius: inherit;
+}
+
+.pickerCard {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  width: 180px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  box-shadow: var(--shadow-lg);
+}
+
+.pickerTitle {
+  font-family: var(--font-display);
+  font-size: 17px;
+  color: var(--black);
+  font-weight: 500;
+}
+
+.pickerLabel {
+  font-size: 12px;
+  color: var(--warm-gray-600);
+  text-align: center;
+  line-height: 1.4;
+}
+
+.pickerRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.pickerStepBtn {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--warm-gray-50);
+  border: 1px solid var(--warm-gray-100);
+  font-size: 18px;
+  color: var(--black);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s;
+  line-height: 1;
+}
+.pickerStepBtn:hover { background: var(--warm-gray-100); }
+
+.pickerNum {
+  font-size: 22px;
+  font-family: var(--font-display);
+  color: var(--black);
+  min-width: 28px;
+  text-align: center;
+}
+
+.pickerAddBtn {
+  width: 100%;
+  background: var(--black);
+  color: var(--white);
+  border: none;
+  padding: 9px 0;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.pickerAddBtn:hover { background: var(--warm-gray-800); }

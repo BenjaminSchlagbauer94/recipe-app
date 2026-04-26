@@ -78,6 +78,41 @@
 }
 .addBtn:active { transform: translateY(0); }
 
+.cartNavBtn {
+  position: relative;
+  background: none;
+  border: none;
+  color: var(--warm-gray-600);
+  cursor: pointer;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  border-radius: var(--radius-md);
+  transition: color 0.2s, background 0.2s;
+}
+.cartNavBtn:hover {
+  color: var(--black);
+  background: var(--warm-gray-50);
+}
+
+.cartBadge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background: var(--accent);
+  color: var(--white);
+  font-size: 10px;
+  font-weight: 600;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  line-height: 1;
+}
+
 .menuBtn {
   display: none;
   flex-direction: column;
