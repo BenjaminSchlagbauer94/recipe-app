@@ -33,6 +33,11 @@ export default function RecipeForm({ initial = {}, onSave, onCancel, mode = 'edi
   })
   const [saving, setSaving] = useState(false)
   const [newIngredient, setNewIngredient] = useState('')
+  // Separate draft state so the amount input can be cleared mid-edit without
+  // immediately mangling the ingredient string or the steps.
+  const [draftAmounts, setDraftAmounts] = useState(() =>
+    (initial.ingredients || []).map(ing => parseIngredient(ing).amount)
+  )
 
   useEffect(() => {
     getCategories().then(setCategories).catch(console.error)
@@ -42,20 +47,33 @@ export default function RecipeForm({ initial = {}, onSave, onCancel, mode = 'edi
 
   const addIngredient = () => {
     if (!newIngredient.trim()) return
+    const { amount } = parseIngredient(newIngredient.trim())
     set('ingredients', [...form.ingredients, newIngredient.trim()])
+    setDraftAmounts(da => [...da, amount])
     setNewIngredient('')
   }
 
-  const removeIngredient = (i) =>
+  const removeIngredient = (i) => {
     set('ingredients', form.ingredients.filter((_, idx) => idx !== i))
+    setDraftAmounts(da => da.filter((_, idx) => idx !== i))
+  }
 
-  const updateIngredientAmount = (i, newAmount) => {
+  // While typing: only update the draft display, leave ingredient + steps alone.
+  const handleAmountChange = (i, val) =>
+    setDraftAmounts(da => da.map((a, idx) => idx === i ? val : a))
+
+  // On blur: commit if non-empty (and sync steps), otherwise revert to stored value.
+  const handleAmountBlur = (i) => {
+    const newAmount = draftAmounts[i].trim()
     const { amount: oldAmount, rest } = parseIngredient(form.ingredients[i])
+    if (!newAmount) {
+      setDraftAmounts(da => da.map((a, idx) => idx === i ? oldAmount : a))
+      return
+    }
+    if (newAmount === oldAmount) return
     const newIngredientStr = newAmount + (rest ? ' ' + rest : '')
     const newIngredients = form.ingredients.map((ing, idx) => idx === i ? newIngredientStr : ing)
-    const newSteps = (oldAmount && oldAmount !== newAmount)
-      ? form.steps.map(step => step.split(oldAmount).join(newAmount))
-      : form.steps
+    const newSteps = form.steps.map(step => step.split(oldAmount).join(newAmount))
     setForm(f => ({ ...f, ingredients: newIngredients, steps: newSteps }))
   }
 
@@ -162,8 +180,9 @@ export default function RecipeForm({ initial = {}, onSave, onCancel, mode = 'edi
                 {amount ? (
                   <input
                     className={styles.amountInput}
-                    value={amount}
-                    onChange={e => updateIngredientAmount(i, e.target.value)}
+                    value={draftAmounts[i] ?? amount}
+                    onChange={e => handleAmountChange(i, e.target.value)}
+                    onBlur={() => handleAmountBlur(i)}
                   />
                 ) : null}
                 <span className={styles.ingredientRest}>{rest}</span>
