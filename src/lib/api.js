@@ -64,6 +64,16 @@ export async function createCategory(category) {
   return res.json()
 }
 
+export async function getInspirations({ excludeUrls = [], count = 5 } = {}) {
+  const res = await fetch(`${API_URL}/inspirations`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ excludeUrls, count }),
+  })
+  if (!res.ok) throw new Error('Failed to get inspirations')
+  return res.json()
+}
+
 export async function generateShoppingList(items) {
   const res = await fetch(`${API_URL}/shopping/list`, {
     method: 'POST',

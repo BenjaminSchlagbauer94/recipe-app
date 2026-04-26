@@ -30,6 +30,7 @@ export default function Layout() {
 
           <nav className={styles.nav}>
             <Link to="/" className={styles.navLink}>Collection</Link>
+            <Link to="/inspirations" className={styles.navLink}>Inspirations</Link>
             <button
               className={styles.cartNavBtn}
               onClick={() => navigate('/cart')}
@@ -38,10 +39,7 @@ export default function Layout() {
               <CartIcon />
               {cartCount > 0 && <span className={styles.cartBadge}>{cartCount}</span>}
             </button>
-            <button
-              className={styles.addBtn}
-              onClick={() => navigate('/add')}
-            >
+            <button className={styles.addBtn} onClick={() => navigate('/add')}>
               + New Recipe
             </button>
           </nav>
@@ -51,15 +49,14 @@ export default function Layout() {
             onClick={() => setMenuOpen(!menuOpen)}
             aria-label="Menu"
           >
-            <span />
-            <span />
-            <span />
+            <span /><span /><span />
           </button>
         </div>
 
         {menuOpen && (
           <div className={styles.mobileMenu}>
             <Link to="/" onClick={() => setMenuOpen(false)}>Collection</Link>
+            <Link to="/inspirations" onClick={() => setMenuOpen(false)}>✦ Inspirations</Link>
             <Link to="/cart" onClick={() => setMenuOpen(false)}>
               Cart {cartCount > 0 && `(${cartCount})`}
             </Link>
