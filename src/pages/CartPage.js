@@ -4,7 +4,7 @@ import styles from './CartPage.module.css'
 
 export default function CartPage() {
   const navigate = useNavigate()
-  const { cartItems, removeFromCart, updateServings, clearCart, otherGroceries, removeOtherGrocery } = useCart()
+  const { cartItems, removeFromCart, updateServings, clearCart, otherGroceries, removeOtherGrocery, updateOtherGroceryQuantity } = useCart()
 
   if (cartItems.length === 0 && otherGroceries.length === 0) {
     return (
@@ -79,16 +79,34 @@ export default function CartPage() {
         </div>
 
         {otherGroceries.length > 0 ? (
-          <div className={styles.chipList}>
+          <div className={styles.otherList}>
             {otherGroceries.map(item => (
-              <span key={item} className={styles.chip}>
-                {item}
+              <div key={item.name} className={styles.otherItem}>
+                <div className={styles.otherItemInfo}>
+                  <span className={styles.otherItemName}>{item.name}</span>
+                  <div className={styles.servingsRow}>
+                    <button
+                      className={styles.stepBtn}
+                      onClick={() => updateOtherGroceryQuantity(item.name, item.quantity - 1)}
+                    >−</button>
+                    <span className={styles.servingsNum}>{item.quantity}</span>
+                    <span className={styles.servingsUnit}>piece{item.quantity !== 1 ? 's' : ''}</span>
+                    <button
+                      className={styles.stepBtn}
+                      onClick={() => updateOtherGroceryQuantity(item.name, item.quantity + 1)}
+                    >+</button>
+                  </div>
+                </div>
                 <button
-                  className={styles.chipRemove}
-                  onClick={() => removeOtherGrocery(item)}
-                  aria-label={`Remove ${item}`}
-                >×</button>
-              </span>
+                  className={styles.removeBtn}
+                  onClick={() => removeOtherGrocery(item.name)}
+                  aria-label={`Remove ${item.name}`}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                    <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
+              </div>
             ))}
           </div>
         ) : (

@@ -53,7 +53,7 @@ export default function OtherGroceriesPage() {
           <p className={styles.suggestionsLabel}>Quick add</p>
           <div className={styles.suggestionsList}>
             {suggestions.map(name => {
-              const added = otherGroceries.includes(name)
+              const added = otherGroceries.some(i => i.name === name)
               return (
                 <button
                   key={name}
@@ -74,12 +74,12 @@ export default function OtherGroceriesPage() {
           <p className={styles.addedLabel}>Added ({otherGroceries.length})</p>
           <ul className={styles.addedList}>
             {otherGroceries.map(item => (
-              <li key={item} className={styles.addedItem}>
-                <span>{item}</span>
+              <li key={item.name} className={styles.addedItem}>
+                <span>{item.name} <span style={{color:'var(--warm-gray-400)', fontSize:'13px'}}>× {item.quantity}</span></span>
                 <button
                   className={styles.removeBtn}
-                  onClick={() => removeOtherGrocery(item)}
-                  aria-label={`Remove ${item}`}
+                  onClick={() => removeOtherGrocery(item.name)}
+                  aria-label={`Remove ${item.name}`}
                 >
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                     <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />

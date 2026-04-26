@@ -56,14 +56,25 @@ export function CartProvider({ children }) {
     return cartItems.some(item => item.id === id)
   }
 
-  function addOtherGrocery(item) {
-    const trimmed = item.trim()
+  // otherGroceries items are { name: string, quantity: number }
+  function addOtherGrocery(name) {
+    const trimmed = name.trim()
     if (!trimmed) return
-    setOtherGroceries(prev => prev.includes(trimmed) ? prev : [...prev, trimmed])
+    setOtherGroceries(prev =>
+      prev.some(i => i.name === trimmed) ? prev : [...prev, { name: trimmed, quantity: 1 }]
+    )
   }
 
-  function removeOtherGrocery(item) {
-    setOtherGroceries(prev => prev.filter(i => i !== item))
+  function removeOtherGrocery(name) {
+    setOtherGroceries(prev => prev.filter(i => i.name !== name))
+  }
+
+  function updateOtherGroceryQuantity(name, quantity) {
+    if (quantity < 1) {
+      setOtherGroceries(prev => prev.filter(i => i.name !== name))
+      return
+    }
+    setOtherGroceries(prev => prev.map(i => i.name === name ? { ...i, quantity } : i))
   }
 
   function clearOtherGroceries() {
@@ -73,7 +84,7 @@ export function CartProvider({ children }) {
   return (
     <CartContext.Provider value={{
       cartItems, addToCart, removeFromCart, updateServings, clearCart, isInCart,
-      otherGroceries, addOtherGrocery, removeOtherGrocery, clearOtherGroceries,
+      otherGroceries, addOtherGrocery, removeOtherGrocery, updateOtherGroceryQuantity, clearOtherGroceries,
     }}>
       {children}
     </CartContext.Provider>

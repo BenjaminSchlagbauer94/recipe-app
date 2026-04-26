@@ -54,7 +54,10 @@ export default function ShoppingListPage() {
     setError(null)
     try {
       const items = cartItems.map(item => ({ recipeId: item.id, servings: item.servings }))
-      const data = await generateShoppingList(items, otherGroceries)
+      const formattedOther = otherGroceries.map(i =>
+        `${i.quantity} piece${i.quantity !== 1 ? 's' : ''} ${i.name}`
+      )
+      const data = await generateShoppingList(items, formattedOther)
       const withIds = data.categories.map(cat => ({
         ...cat,
         items: cat.items.map((item, i) => ({
