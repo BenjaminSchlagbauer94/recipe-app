@@ -93,7 +93,7 @@ export default function CalendarPage() {
     setLocalActiveDays(newDays) // immediate visual feedback
     try {
       await updateCalendarSettings({ active_days: newDays })
-      // CalendarContext Realtime will refresh calendarData, triggering fetchWeek
+      await fetchWeek(viewingDate)
     } catch (err) {
       setLocalActiveDays(localActiveDays) // revert on error
       console.error(err)
