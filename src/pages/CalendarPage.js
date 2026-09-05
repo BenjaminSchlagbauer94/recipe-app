@@ -105,6 +105,7 @@ export default function CalendarPage() {
     setActionLoading(true)
     try {
       await reshuffleCalendar()
+      await fetchWeek(viewingDate)
     } catch (err) {
       console.error(err)
     } finally {
