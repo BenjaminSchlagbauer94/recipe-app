@@ -26,7 +26,7 @@ export default function CookModePage() {
   useEffect(() => {
     getRecipe(id)
       .then(r => {
-        setRecipe({ ...r, steps: restoreAmountsInSteps(r.ingredients || [], r.steps || []) })
+        setRecipe(r)
         setServings(r.servings || 2)
       })
       .catch(() => navigate('/'))
@@ -116,8 +116,8 @@ export default function CookModePage() {
   )
   if (!recipe) return null
 
-  const steps = recipe.steps || []
   const ingredients = recipe.ingredients || []
+  const steps = restoreAmountsInSteps(ingredients.map(ing => scaleIngredient(ing)), recipe.steps || [])
   const progress = steps.length ? ((currentStep + 1) / steps.length) * 100 : 0
 
   // ── SETUP PHASE ──────────────────────────────────────────
