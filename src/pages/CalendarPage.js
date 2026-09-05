@@ -15,23 +15,29 @@ const DAY_FULL = {
   friday:'Friday', saturday:'Saturday', sunday:'Sunday'
 }
 
+function toLocalDateStr(date) {
+  return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`
+}
+
 function getMondayStr(date) {
   const d = new Date(date)
   const day = d.getDay()
   const diff = day === 0 ? -6 : 1 - day
   d.setDate(d.getDate() + diff)
-  return d.toISOString().slice(0, 10)
+  return toLocalDateStr(d)
 }
 
 function addDays(dateStr, n) {
   const d = new Date(dateStr + 'T00:00:00')
   d.setDate(d.getDate() + n)
-  return d.toISOString().slice(0, 10)
+  return toLocalDateStr(d)
 }
 
-function formatWeekOf(mondayStr) {
+function formatWeekLabel(mondayStr) {
+  const currentMonday = getMondayStr(new Date())
+  if (mondayStr === currentMonday) return 'Current Week'
   const d = new Date(mondayStr + 'T00:00:00')
-  return d.toLocaleDateString('en-IE', { month: 'short', day: 'numeric' })
+  return `Week of ${d.toLocaleDateString('en-IE', { month: 'short', day: 'numeric' })}`
 }
 
 function CartIcon() {
@@ -50,7 +56,16 @@ export default function CalendarPage() {
   const [viewingDate, setViewingDate] = useState(() => getMondayStr(new Date()))
   const [weekLoading, setWeekLoading] = useState(false)
   const [actionLoading, setActionLoading] = useState(false)
-  const [overridePicker, setOverridePicker] = useState(null) // { date, dayName }
+  const [overridePicker, setOverridePicker] = useState(null)
+  // Local active-days state so day pills respond instantly without waiting for Realtime
+  const [localActiveDays, setLocalActiveDays] = useState([])
+
+  // Sync local state from server state (Realtime updates or initial load)
+  useEffect(() => {
+    if (calendarData?.active_days) {
+      setLocalActiveDays(calendarData.active_days)
+    }
+  }, [calendarData?.active_days]) // eslint-disable-line
 
   const fetchWeek = useCallback(async (date) => {
     setWeekLoading(true)
@@ -64,25 +79,24 @@ export default function CalendarPage() {
     }
   }, [])
 
-  // Refetch week when viewingDate changes or when calendarData changes (reshuffle/override)
+  // Refetch week when viewingDate changes or calendarData changes (reshuffle / override / pool change)
   useEffect(() => {
     if (calendarData) fetchWeek(viewingDate)
   }, [viewingDate, calendarData, fetchWeek])
 
   async function handleDayToggle(day) {
-    if (!calendarData || actionLoading) return
-    const current = calendarData.active_days || []
-    const newDays = current.includes(day)
-      ? current.filter(d => d !== day)
-      : [...current, day]
-    setActionLoading(true)
+    if (!calendarData) return
+    // Compute new days from localActiveDays so rapid multi-taps stack correctly
+    const newDays = localActiveDays.includes(day)
+      ? localActiveDays.filter(d => d !== day)
+      : [...localActiveDays, day]
+    setLocalActiveDays(newDays) // immediate visual feedback
     try {
       await updateCalendarSettings({ active_days: newDays })
-      // CalendarContext Realtime will update calendarData, which triggers fetchWeek
+      // CalendarContext Realtime will refresh calendarData, triggering fetchWeek
     } catch (err) {
+      setLocalActiveDays(localActiveDays) // revert on error
       console.error(err)
-    } finally {
-      setActionLoading(false)
     }
   }
 
@@ -91,7 +105,6 @@ export default function CalendarPage() {
     setActionLoading(true)
     try {
       await reshuffleCalendar()
-      // CalendarContext Realtime will update calendarData, which triggers fetchWeek
     } catch (err) {
       console.error(err)
     } finally {
@@ -129,11 +142,12 @@ export default function CalendarPage() {
 
   if (!calendarData) return <div className={styles.loading}>Loading calendar...</div>
 
-  const activeDays = calendarData.active_days || []
   const highlightedRecipes = calendarData.highlighted_recipes || []
-  const hasActiveDays = activeDays.length > 0
+  const hasActiveDays = localActiveDays.length > 0
   const hasPool = highlightedRecipes.length > 0
   const days = weekData?.days || []
+  const currentMonday = getMondayStr(new Date())
+  const isCurrentWeek = viewingDate === currentMonday
 
   return (
     <div className={styles.page}>
@@ -146,9 +160,8 @@ export default function CalendarPage() {
           {ALL_DAYS.map(day => (
             <button
               key={day}
-              className={`${styles.dayPill} ${activeDays.includes(day) ? styles.dayPillActive : ''}`}
+              className={`${styles.dayPill} ${localActiveDays.includes(day) ? styles.dayPillActive : ''}`}
               onClick={() => handleDayToggle(day)}
-              disabled={actionLoading}
             >
               {DAY_LABELS[day]}
             </button>
@@ -174,8 +187,9 @@ export default function CalendarPage() {
               <button
                 className={styles.weekNavBtn}
                 onClick={() => setViewingDate(d => addDays(d, -7))}
+                disabled={isCurrentWeek}
               >◀</button>
-              <span className={styles.weekLabel}>Week of {formatWeekOf(viewingDate)}</span>
+              <span className={styles.weekLabel}>{formatWeekLabel(viewingDate)}</span>
               <button
                 className={styles.weekNavBtn}
                 onClick={() => setViewingDate(d => addDays(d, 7))}
