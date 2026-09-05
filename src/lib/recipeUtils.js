@@ -25,18 +25,83 @@ export function parseIngredient(str) {
 // steps and prepends the amount where it is missing. Only touches the first
 // matching step per ingredient. Uses a two-token lookback to detect amounts
 // that are already present (handles "125 g Butter" vs a second "175 g Butter").
-// Scales numbers that are followed by a known ingredient unit in step/free text.
-// Deliberately ignores bare numbers (timers, temperatures) that have no unit.
-export function scaleAmountsInStep(text, ratio) {
-  if (!ratio || ratio === 1) return text
-  return text.replace(
-    new RegExp(`(\\d+(?:[.,]\\d+)?)(\\s*)(${UNITS})\\b`, 'gi'),
-    (_, num, space, unit) => {
-      const n = parseFloat(num.replace(',', '.'))
-      const scaled = n * ratio
-      return (scaled % 1 === 0 ? String(scaled) : scaled.toFixed(1)) + space + unit
+// Combined scaling + injection for cook mode.
+// For each ingredient pair (original, scaled):
+//   1. Replaces the original amount before the ingredient name in ALL steps
+//      (handles both unit amounts like "200g" and plain counts like "2 Eier")
+//   2. Falls back to injecting the scaled amount where the name appears without any amount
+export function scaleAndRestoreAmountsInSteps(originalIngredients, scaledIngredients, steps) {
+  let result = steps.slice()
+
+  for (let i = 0; i < originalIngredients.length; i++) {
+    const { amount: origAmt, rest: origRest } = parseIngredient(originalIngredients[i])
+    const { amount: scaledAmt } = parseIngredient(scaledIngredients[i])
+
+    if (!origRest) continue
+    const ingName = origRest.replace(/^(?:of|von|aus|mit)\s+/i, '').trim()
+    if (ingName.length < 2) continue
+    const ingNameFirst = ingName.split(/\s+/)[0]
+
+    // Step 1: replace original amount before ingredient name (handles all amount types)
+    if (origAmt && scaledAmt && origAmt !== scaledAmt) {
+      const tryReplace = (name) => {
+        const search = (origAmt + ' ' + name).toLowerCase()
+        let found = false
+        const updated = result.map(step => {
+          let s = step, lo = s.toLowerCase(), idx = lo.indexOf(search)
+          while (idx !== -1) {
+            s = s.slice(0, idx) + scaledAmt + s.slice(idx + origAmt.length)
+            lo = s.toLowerCase()
+            idx = lo.indexOf(search, idx + scaledAmt.length)
+            found = true
+          }
+          return s
+        })
+        return found ? updated : null
+      }
+      const r = tryReplace(ingName) || (ingNameFirst !== ingName && tryReplace(ingNameFirst))
+      if (r) { result = r; continue }
     }
-  )
+
+    if (!scaledAmt) continue
+
+    // Step 2: skip if scaled amount already present somewhere
+    const alreadyPresent = (name) => result.some(s => {
+      const lo = s.toLowerCase()
+      return lo.includes((scaledAmt + ' ' + name).toLowerCase()) ||
+             lo.includes((scaledAmt + name).toLowerCase())
+    })
+    if (alreadyPresent(ingName) || (ingNameFirst !== ingName && alreadyPresent(ingNameFirst))) continue
+
+    // Step 3: inject scaled amount where ingredient name appears without a preceding amount
+    const tryInject = (name) => {
+      const lowerName = name.toLowerCase()
+      let injected = false
+      const updated = result.map(step => {
+        if (injected) return step
+        const lowerStep = step.toLowerCase()
+        const idx = lowerStep.indexOf(lowerName)
+        if (idx === -1) return step
+        const charBefore = idx > 0 ? step[idx - 1] : ' '
+        const charAfter = step[idx + name.length] || ' '
+        if (/[a-zA-ZäöüÄÖÜß]/.test(charBefore)) return step
+        if (/[a-zA-ZäöüÄÖÜß]/.test(charAfter)) return step
+        const textBefore = step.substring(0, idx).trimEnd()
+        const recentTokens = textBefore.split(/\s+/).slice(-2)
+        if (recentTokens.some(t => /\d/.test(t))) return step
+        injected = true
+        return step.substring(0, idx) + scaledAmt + ' ' + step.substring(idx)
+      })
+      return injected ? updated : null
+    }
+    const withFull = tryInject(ingName)
+    if (withFull) { result = withFull; continue }
+    if (ingNameFirst !== ingName) {
+      const withFirst = tryInject(ingNameFirst)
+      if (withFirst) result = withFirst
+    }
+  }
+  return result
 }
 
 export function restoreAmountsInSteps(ingredients, steps) {
