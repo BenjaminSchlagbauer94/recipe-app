@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { getRecipe } from '../lib/api'
-import { restoreAmountsInSteps } from '../lib/recipeUtils'
+import { restoreAmountsInSteps, scaleAmountsInStep } from '../lib/recipeUtils'
 import styles from './CookModePage.module.css'
 
 export default function CookModePage() {
@@ -117,7 +117,13 @@ export default function CookModePage() {
   if (!recipe) return null
 
   const ingredients = recipe.ingredients || []
-  const steps = restoreAmountsInSteps(ingredients.map(ing => scaleIngredient(ing)), recipe.steps || [])
+  const ratio = recipe.servings ? servings / recipe.servings : 1
+  const scaledIngredients = ingredients.map(ing => scaleIngredient(ing))
+  // First replace unit-based amounts already present in step text, then inject any still missing
+  const steps = restoreAmountsInSteps(
+    scaledIngredients,
+    (recipe.steps || []).map(step => scaleAmountsInStep(step, ratio))
+  )
   const progress = steps.length ? ((currentStep + 1) / steps.length) * 100 : 0
 
   // ── SETUP PHASE ──────────────────────────────────────────

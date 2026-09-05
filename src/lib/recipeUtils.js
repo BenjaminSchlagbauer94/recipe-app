@@ -25,6 +25,20 @@ export function parseIngredient(str) {
 // steps and prepends the amount where it is missing. Only touches the first
 // matching step per ingredient. Uses a two-token lookback to detect amounts
 // that are already present (handles "125 g Butter" vs a second "175 g Butter").
+// Scales numbers that are followed by a known ingredient unit in step/free text.
+// Deliberately ignores bare numbers (timers, temperatures) that have no unit.
+export function scaleAmountsInStep(text, ratio) {
+  if (!ratio || ratio === 1) return text
+  return text.replace(
+    new RegExp(`(\\d+(?:[.,]\\d+)?)(\\s*)(${UNITS})\\b`, 'gi'),
+    (_, num, space, unit) => {
+      const n = parseFloat(num.replace(',', '.'))
+      const scaled = n * ratio
+      return (scaled % 1 === 0 ? String(scaled) : scaled.toFixed(1)) + space + unit
+    }
+  )
+}
+
 export function restoreAmountsInSteps(ingredients, steps) {
   let result = steps.slice()
 
