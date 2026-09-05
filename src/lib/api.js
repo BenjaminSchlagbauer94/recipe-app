@@ -99,3 +99,44 @@ export async function enhanceSteps(ingredients, steps) {
   if (!res.ok) throw new Error('Failed to enhance steps')
   return res.json()
 }
+
+export async function getCalendar() {
+  const res = await fetch(`${API_URL}/calendar`)
+  if (!res.ok) throw new Error('Failed to fetch calendar')
+  return res.json()
+}
+
+export async function updateCalendarSettings(settings) {
+  const res = await fetch(`${API_URL}/calendar/settings`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(settings),
+  })
+  if (!res.ok) throw new Error('Failed to update calendar settings')
+  return res.json()
+}
+
+export async function reshuffleCalendar() {
+  const res = await fetch(`${API_URL}/calendar/reshuffle`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+  })
+  if (!res.ok) throw new Error('Failed to reshuffle calendar')
+  return res.json()
+}
+
+export async function setCalendarOverride(date, recipeId) {
+  const res = await fetch(`${API_URL}/calendar/override`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ date, recipeId }),
+  })
+  if (!res.ok) throw new Error('Failed to set calendar override')
+  return res.json()
+}
+
+export async function getCalendarWeek(date) {
+  const res = await fetch(`${API_URL}/calendar/week?date=${date}`)
+  if (!res.ok) throw new Error('Failed to fetch calendar week')
+  return res.json()
+}
