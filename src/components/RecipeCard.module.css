@@ -222,3 +222,36 @@
   transition: background 0.2s;
 }
 .pickerAddBtn:hover { background: var(--warm-gray-800); }
+
+/* ── Calendar highlight button ───────────────────────────── */
+.calendarBtn {
+  position: absolute;
+  top: 10px;
+  right: 48px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(8px);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--warm-gray-600);
+  transition: background 0.2s, color 0.2s, transform 0.15s;
+  z-index: 2;
+}
+.calendarBtn:hover {
+  background: var(--white);
+  color: var(--accent);
+  transform: scale(1.08);
+}
+.calendarBtnActive {
+  background: var(--accent);
+  color: var(--white);
+}
+.calendarBtnActive:hover {
+  background: var(--accent);
+  color: var(--white);
+}
