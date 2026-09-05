@@ -42,6 +42,7 @@ export default function Layout() {
               {cartCount > 0 && <span className={styles.cartBadge}>{cartCount}</span>}
             </button>
             <Link to="/inspirations" className={styles.navLink}>Inspirations</Link>
+            <Link to="/calendar" className={styles.navLink}>Calendar</Link>
           </nav>
 
           <div className={styles.mobileRight}>
@@ -71,6 +72,7 @@ export default function Layout() {
               Cart {cartCount > 0 && `(${cartCount})`}
             </Link>
             <Link to="/inspirations" onClick={() => setMenuOpen(false)}>Inspirations</Link>
+            <Link to="/calendar" onClick={() => setMenuOpen(false)}>Cooking Calendar</Link>
           </div>
         )}
       </header>
