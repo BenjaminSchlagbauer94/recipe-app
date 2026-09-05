@@ -14,27 +14,32 @@ import CartPage from './pages/CartPage'
 import ShoppingListPage from './pages/ShoppingListPage'
 import OtherGroceriesPage from './pages/OtherGroceriesPage'
 import InspirationPage from './pages/InspirationPage'
+import { CalendarProvider } from './lib/CalendarContext'
+import CalendarPage from './pages/CalendarPage'
 
 const root = ReactDOM.createRoot(document.getElementById('root'))
 root.render(
   <React.StrictMode>
-    <CartProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Layout />}>
-            <Route index element={<HomePage />} />
-            <Route path="category/:id" element={<CategoryPage />} />
-            <Route path="recipe/:id" element={<RecipeDetailPage />} />
-            <Route path="recipe/:id/edit" element={<EditRecipePage />} />
-            <Route path="add" element={<AddRecipePage />} />
-            <Route path="cart" element={<CartPage />} />
-            <Route path="other-groceries" element={<OtherGroceriesPage />} />
-            <Route path="shopping-list" element={<ShoppingListPage />} />
-            <Route path="inspirations" element={<InspirationPage />} />
-          </Route>
-          <Route path="recipe/:id/cook" element={<CookModePage />} />
-        </Routes>
-      </BrowserRouter>
-    </CartProvider>
+    <CalendarProvider>
+      <CartProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Layout />}>
+              <Route index element={<HomePage />} />
+              <Route path="category/:id" element={<CategoryPage />} />
+              <Route path="recipe/:id" element={<RecipeDetailPage />} />
+              <Route path="recipe/:id/edit" element={<EditRecipePage />} />
+              <Route path="add" element={<AddRecipePage />} />
+              <Route path="cart" element={<CartPage />} />
+              <Route path="other-groceries" element={<OtherGroceriesPage />} />
+              <Route path="shopping-list" element={<ShoppingListPage />} />
+              <Route path="inspirations" element={<InspirationPage />} />
+              <Route path="calendar" element={<CalendarPage />} />
+            </Route>
+            <Route path="recipe/:id/cook" element={<CookModePage />} />
+          </Routes>
+        </BrowserRouter>
+      </CartProvider>
+    </CalendarProvider>
   </React.StrictMode>
 )
